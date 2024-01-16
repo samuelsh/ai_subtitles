@@ -28,3 +28,4 @@ CSRF_SESSION_KEY = 'Use http://grc.com/passwords'
 
 SECRET_KEY = 'Same as Session Key'
 
+OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
