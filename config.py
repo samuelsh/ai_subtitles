@@ -27,3 +27,4 @@ CSRF_SESSION_KEY = 'Use http://grc.com/passwords'
 # Key for cookies
 
 SECRET_KEY = 'Same as Session Key'
+
