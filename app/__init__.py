@@ -2,7 +2,7 @@
 import pathlib
 
 import openai
-from easypy.units import HOUR, MINUTE, GiB, MiB, Duration
+from easypy.units import HOUR, MINUTE, GiB, MiB
 from io import BytesIO
 from datetime import datetime, timedelta
 from pydub import AudioSegment
