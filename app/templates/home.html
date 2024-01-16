@@ -3,11 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #7983ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     <title>Audio Transcription</title>
 </head>
 <body>
     <h1>Audio Transcription</h1>
-    <form action="/transcribe" method="post" enctype="multipart/form-data">
+    <form action="/transcribe" method="post" enctype="multipart/form-data" id="transcribe_form">
         <label for="audio_file">Select a media file:</label>
         <input type="file" name="audio_file" accept=".mp3, .wav, .ogg, .mp4" required>
         <br>
@@ -18,41 +32,9 @@
             </select>
         <br>
         <br>
-        <button type="submit">Transcribe</button>
+        <button type="submit">Transcribe and Download</button>
     </form>
-    <div>
-        <p>Click the button below to download the file:</p>
-        <a href="{{ url_for('download_file') }}" download>
-            <button>Download File</button>
-        </a>
-    </div>
-    <label>Result:</label>
-    <div>
-        <div id="result"></div>
-    </div>
-    <script>
-        document.querySelector('form').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-
-            try {
-                const response = await fetch('/transcribe', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const result = await response.json();
-
-                if (result.error) {
-                    alert(`Error: ${result.error}`);
-                } else {
-                    document.getElementById('result').innerText = result.subtitles;
-                }
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-            }
-        });
-    </script>
-</body>
+<!--    <div id="loadingSpinner" class="spinner" style="display:none;"></div>-->
+<!--    <script src="static/js/spinner.js"></script>-->
+    </body>
 </html>
