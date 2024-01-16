@@ -41,8 +41,10 @@ def transcribe():
     print("File Info:", audio_file.filename, audio_file.content_type)
 
     # Ensure the file has a valid format (you may need to adjust this based on your requirements)
-    if not audio_file.filename.endswith(('.mp3', '.wav', '.ogg')):
+    if not audio_file.filename.endswith(('.mp3', 'mp4', '.wav', '.ogg')):
         return jsonify({'error': 'Invalid audio file format'})
+
+    dnl_format = request.form.get('format', 'txt')
 
     # Call OpenAI API to generate subtitles
     file_buf = BytesIO(audio_file.read())
@@ -52,7 +54,7 @@ def transcribe():
             model="whisper-1",
             file=file_buf,
             language='ru',
-            response_format='srt'
+            response_format=dnl_format
         )
         with open("app/static/downloads/subtitles.srt", "wt") as f:
             f.write(str(response))
