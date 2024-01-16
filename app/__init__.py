@@ -56,7 +56,8 @@ def transcribe():
             language='ru',
             response_format=dnl_format
         )
-        with open("app/static/downloads/subtitles.srt", "wt") as f:
+        with open(
+                f"app/static/downloads/subtitles.{'srt' if dnl_format == 'srt' else 'txt'}", "wt") as f:
             f.write(str(response))
         return jsonify({'subtitles': response})
     except Exception as e:
@@ -66,12 +67,14 @@ def transcribe():
 @app.route('/download')
 def download_file():
     # Replace 'path/to/your/file.txt' with the actual path to the file you want to serve
-    file_path = 'app/static/downloads/subtitles.srt'
+    dnl_format = request.form.get('format', 'text')
+    ext = 'srt' if dnl_format == 'srt' else 'txt'
+    file_path = f"app/static/downloads/subtitles.{ext}"
 
     # You can also specify a custom filename for the downloaded file
     with open(file_path, "rb") as f:
         buf = BytesIO(f.read())
-    return send_file(buf, as_attachment=True, download_name="subtitles.txt")
+    return send_file(buf, as_attachment=True, download_name=f"subtitles.{ext}")
 
 
 # Import modules here
