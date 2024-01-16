@@ -13,10 +13,12 @@
         <br>
         <button type="submit">Transcribe</button>
     </form>
-    <p>Click the button below to download the file:</p>
-    <a href="{{ url_for('download_file') }}" download>
-        <button>Download File</button>
-    </a>
+    <div>
+        <p>Click the button below to download the file:</p>
+        <a href="{{ url_for('download_file') }}" download>
+            <button>Download File</button>
+        </a>
+    </div>
     <label>Result:</label>
     <div>
         <div id="result"></div>
