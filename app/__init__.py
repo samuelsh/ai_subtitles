@@ -2,7 +2,6 @@
 import pathlib
 
 import openai
-import logging
 from easypy.units import HOUR, MINUTE, GiB, MiB, Duration
 from io import BytesIO
 from datetime import datetime, timedelta
