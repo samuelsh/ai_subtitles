@@ -44,11 +44,7 @@ def transcribe():
     if not audio_file.filename.endswith(('.mp3', 'mp4', '.wav', '.ogg')):
         return jsonify({'error': 'Invalid audio file format'})
 
-<<<<<<< HEAD
-    dnl_format = request.form.get('format', 'txt')
-=======
     dnl_format = request.form.get('format', 'text')
->>>>>>> 696a89f (subtitles-creator: basic working prototype)
 
     # Call OpenAI API to generate subtitles
     file_buf = BytesIO(audio_file.read())
