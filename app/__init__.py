@@ -1,7 +1,9 @@
 # Import flask and template operators
 import pathlib
-
+import asyncio
+import aiohttp
 import openai
+
 from easypy.units import HOUR, MINUTE, GiB, MiB
 from io import BytesIO
 from datetime import datetime, timedelta
@@ -39,9 +41,31 @@ def home():
     return render_template('home.html')
 
 
+async def async_transcript(path, dnl_format):
+    with open(path, 'rb') as tmp_file:
+        try:
+            async with aiohttp.ClientSession() as session:
+                response = await session.post(
+                    'https://api.openai.com/v1/audio/transcriptions',
+                    headers={
+                        'Authorization': f'Bearer {openai.api_key}',
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    data={
+                        "model": "whisper-1",
+                        "file": tmp_file,
+                        "language": "ru",
+                        "response_format": dnl_format
+                    }
+                )
+                return await response.text()
+        except Exception as e:
+            return jsonify({'error': f'Error processing audio: {str(e)}'})
+
+
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
-    subtitles_buf = b""
+    subtitles_buf = ""
 
     if 'audio_file' not in request.files:
         return jsonify({'error': 'No audio file provided'})
@@ -73,11 +97,15 @@ def transcribe():
         len_in_sec = len(audio_file) // 1000
 
         app.logger.info(f"Audio file duration={timedelta(seconds=len_in_sec)} min")
+        # Iterate over 10 minutes chunks
         for time_offset in range(len_in_sec // TEN_MINUTES):
-            buf = audio_file[time_offset * TEN_MINUTES]
+            buf = audio_file[
+                  time_offset * TEN_MINUTES * 1_000: time_offset * TEN_MINUTES * 1_000 + TEN_MINUTES * 1_000]
             buf.export(f"app/static/downloads/tmp_{time_offset}.mp3", format="mp3")
 
-            app.logger.info(f"Processing tmp_{time_offset}.mp3")
+            app.logger.info(
+                f"Processing tmp_{time_offset}.mp3 start={time_offset * TEN_MINUTES},"
+                f" end={time_offset * TEN_MINUTES + TEN_MINUTES}")
             with open(f"app/static/downloads/tmp_{time_offset}.mp3", 'rb') as tmp_file:
                 try:
                     response = client.audio.transcriptions.create(
@@ -88,10 +116,13 @@ def transcribe():
                     )
                 except Exception as e:
                     return jsonify({'error': f'Error processing audio: {str(e)}'})
-                subtitles_buf += response
+            # response = await async_transcript(f"app/static/downloads/tmp_{time_offset}.mp3", dnl_format)
+            subtitles_buf += response
             pathlib.Path(f"app/static/downloads/tmp_{time_offset}.mp3").unlink()
 
     else:
+        # response = await async_transcript(path_to_tmp_mp3_file, dnl_format)
+        # subtitles_buf = response
         # Call OpenAI API to generate subtitles
         with open(f"{path_to_tmp_mp3_file}", 'rb') as tmp_file:
             try:
@@ -110,9 +141,9 @@ def transcribe():
     ext = 'srt' if dnl_format == 'srt' else 'txt'
     filename = f"subtitles_{datetime.now().strftime('%y_%m_%d_%H%M%S')}.{ext}"
     buf = BytesIO(subtitles_buf.encode())
-    pathlib.Path(f"app/static/downloads/{TMP_MEDIA_FILE}").unlink()
-    pathlib.Path(f"app/static/downloads/{media_file.filename}").unlink()
-    return send_file(buf, as_attachment=True, download_name=f"{filename}.{ext}")
+    pathlib.Path(path_to_tmp_mp3_file).unlink(missing_ok=True)
+    pathlib.Path(f"app/static/downloads/{media_file.filename}").unlink(missing_ok=True)
+    return send_file(buf, as_attachment=True, download_name=filename)
     # return Response(response, mimetype='text/plain',
     #                 headers={'Content-Disposition': f'attachment;filename={filename}'})
 
