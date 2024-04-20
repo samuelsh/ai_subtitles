@@ -1,4 +1,4 @@
-flask~=3.0.0
+flask[async]~=3.0.0
 gunicorn==21.0.1
 openai~=1.7.2
 pydub==0.25.1
