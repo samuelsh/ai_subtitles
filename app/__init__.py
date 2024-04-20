@@ -44,27 +44,29 @@ def home():
 async def async_transcript(path, dnl_format):
     with open(path, 'rb') as tmp_file:
         try:
+            form_data = aiohttp.FormData()
+            form_data.add_field("file", tmp_file, filename=pathlib.Path(path).name, content_type='multipart/form-data')
+            for key, value in {
+                        "model": "whisper-1",
+                        "language": "ru",
+                        "response_format": dnl_format,
+                    }.items():
+                form_data.add_field(key, value)
             async with aiohttp.ClientSession() as session:
                 response = await session.post(
                     'https://api.openai.com/v1/audio/transcriptions',
                     headers={
-                        'Authorization': f'Bearer {openai.api_key}',
-                        'Content-Type': 'multipart/form-data'
+                        'Authorization': f'Bearer {client.api_key}',
                     },
-                    data={
-                        "model": "whisper-1",
-                        "file": tmp_file,
-                        "language": "ru",
-                        "response_format": dnl_format
-                    }
+                    data=form_data,
                 )
                 return await response.text()
-        except Exception as e:
-            return jsonify({'error': f'Error processing audio: {str(e)}'})
+        except aiohttp.ClientError as e:
+            return jsonify({'error': f'Error processing audio: {e}'})
 
 
 @app.route('/transcribe', methods=['POST'])
-def transcribe():
+async def transcribe():
     subtitles_buf = ""
 
     if 'audio_file' not in request.files:
@@ -92,7 +94,7 @@ def transcribe():
         path_to_tmp_mp3_file = f"app/static/downloads/{TMP_MEDIA_FILE}"
 
     if pathlib.Path(f"{path_to_tmp_mp3_file}").stat().st_size >= 25 * MiB:
-        app.logger.info(f"Media file is greater then {25 * MiB}MB, splitting to chunks ...")
+        app.logger.info(f"Media file is greater then {25 * MiB}, splitting to chunks ...")
         audio_file = AudioSegment.from_file(f"{path_to_tmp_mp3_file}")
         len_in_sec = len(audio_file) // 1000
 
@@ -106,37 +108,37 @@ def transcribe():
             app.logger.info(
                 f"Processing tmp_{time_offset}.mp3 start={time_offset * TEN_MINUTES},"
                 f" end={time_offset * TEN_MINUTES + TEN_MINUTES}")
-            with open(f"app/static/downloads/tmp_{time_offset}.mp3", 'rb') as tmp_file:
-                try:
-                    response = client.audio.transcriptions.create(
-                        model="whisper-1",
-                        file=tmp_file,
-                        language='ru',
-                        response_format=dnl_format
-                    )
-                except Exception as e:
-                    return jsonify({'error': f'Error processing audio: {str(e)}'})
-            # response = await async_transcript(f"app/static/downloads/tmp_{time_offset}.mp3", dnl_format)
+            # with open(f"app/static/downloads/tmp_{time_offset}.mp3", 'rb') as tmp_file:
+            #     try:
+            #         response = client.audio.transcriptions.create(
+            #             model="whisper-1",
+            #             file=tmp_file,
+            #             language='ru',
+            #             response_format=dnl_format
+            #         )
+            #     except Exception as e:
+            #         return jsonify({'error': f'Error processing audio: {str(e)}'})
+            response = await async_transcript(f"app/static/downloads/tmp_{time_offset}.mp3", dnl_format)
             subtitles_buf += response
             pathlib.Path(f"app/static/downloads/tmp_{time_offset}.mp3").unlink()
 
     else:
-        # response = await async_transcript(path_to_tmp_mp3_file, dnl_format)
-        # subtitles_buf = response
+        response = await async_transcript(path_to_tmp_mp3_file, dnl_format)
+        subtitles_buf = response
         # Call OpenAI API to generate subtitles
-        with open(f"{path_to_tmp_mp3_file}", 'rb') as tmp_file:
-            try:
-                response = client.audio.transcriptions.create(
-                    model="whisper-1",
-                    file=tmp_file,
-                    language='ru',
-                    response_format=dnl_format
-                )
-
-                subtitles_buf = response
-
-            except Exception as e:
-                return jsonify({'error': f'Error processing audio: {str(e)}'})
+        # with open(f"{path_to_tmp_mp3_file}", 'rb') as tmp_file:
+        #     try:
+        #         response = client.audio.transcriptions.create(
+        #             model="whisper-1",
+        #             file=tmp_file,
+        #             language='ru',
+        #             response_format=dnl_format
+        #         )
+        #
+        #         subtitles_buf = response
+        #
+        #     except Exception as e:
+        #         return jsonify({'error': f'Error processing audio: {str(e)}'})
 
     ext = 'srt' if dnl_format == 'srt' else 'txt'
     filename = f"subtitles_{datetime.now().strftime('%y_%m_%d_%H%M%S')}.{ext}"
