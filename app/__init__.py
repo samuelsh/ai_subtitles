@@ -6,6 +6,7 @@ import openai
 
 from easypy.units import HOUR, MINUTE, GiB, MiB
 from io import BytesIO
+import concurrent.futures
 from datetime import datetime, timedelta
 from pydub import AudioSegment
 from moviepy.editor import VideoFileClip
@@ -39,6 +40,12 @@ def not_found(error):
 @app.route('/')
 def home():
     return render_template('home.html')
+
+
+async def async_write_audiofile(filename, audio_clip):
+    loop = asyncio.get_running_loop()
+    with concurrent.futures.ThreadPoolExecutor() as pool:
+        await loop.run_in_executor(pool, audio_clip.write_audiofile, filename)
 
 
 async def async_transcript(path, dnl_format):
@@ -89,7 +96,8 @@ async def transcribe():
     if media_file.filename.endswith('.mp4'):
         app.logger.info(f"Converting {media_file.filename} to MP3")
         video = VideoFileClip(f"app/static/downloads/{media_file.filename}")
-        video.audio.write_audiofile(f"app/static/downloads/{TMP_MEDIA_FILE}")
+        # video.audio.write_audiofile(f"app/static/downloads/{TMP_MEDIA_FILE}")
+        await async_write_audiofile("output.mp3", video.audio)
         app.logger.info(f"Media file {media_file.filename} was converted to {TMP_MEDIA_FILE}")
         path_to_tmp_mp3_file = f"app/static/downloads/{TMP_MEDIA_FILE}"
 
