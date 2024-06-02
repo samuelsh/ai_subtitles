@@ -97,7 +97,7 @@ async def transcribe():
         app.logger.info(f"Converting {media_file.filename} to MP3")
         video = VideoFileClip(f"app/static/downloads/{media_file.filename}")
         # video.audio.write_audiofile(f"app/static/downloads/{TMP_MEDIA_FILE}")
-        await async_write_audiofile("output.mp3", video.audio)
+        await async_write_audiofile(f"app/static/downloads/{TMP_MEDIA_FILE}", video.audio)
         app.logger.info(f"Media file {media_file.filename} was converted to {TMP_MEDIA_FILE}")
         path_to_tmp_mp3_file = f"app/static/downloads/{TMP_MEDIA_FILE}"
 
