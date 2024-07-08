@@ -27,4 +27,4 @@ COPY . /app
 EXPOSE 5000
 
 # Command to run the application
-CMD ["gunicorn", "--access-logfile", "access.log", "--error-logfile", "error.log", "--log-level", "debug", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--access-logfile", "access.log", "--error-logfile", "error.log", "--log-level", "debug", "--timeout", "3600", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
