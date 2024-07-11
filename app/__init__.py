@@ -1,10 +1,14 @@
 # Import flask and template operators
+import functools
 import pathlib
 import asyncio
 import aiohttp
+import aiofiles
 import openai
+import heapq
 
 from easypy.units import HOUR, MINUTE, GiB, MiB
+from easypy.concurrency import MultiObject, MultiException
 from io import BytesIO
 import concurrent.futures
 from datetime import datetime, timedelta
@@ -49,15 +53,16 @@ async def async_write_audiofile(filename, audio_clip):
 
 
 async def async_transcript(path, dnl_format):
-    with open(path, 'rb') as tmp_file:
+    async with aiofiles.open(path, 'rb') as tmp_file:
         try:
             form_data = aiohttp.FormData()
-            form_data.add_field("file", tmp_file, filename=pathlib.Path(path).name, content_type='multipart/form-data')
+            form_data.add_field(
+                "file", tmp_file, filename=pathlib.Path(path).name, content_type='multipart/form-data')
             for key, value in {
-                        "model": "whisper-1",
-                        "language": "ru",
-                        "response_format": dnl_format,
-                    }.items():
+                "model": "whisper-1",
+                "language": "ru",
+                "response_format": dnl_format,
+            }.items():
                 form_data.add_field(key, value)
             async with aiohttp.ClientSession() as session:
                 response = await session.post(
@@ -75,6 +80,22 @@ async def async_transcript(path, dnl_format):
 @app.route('/transcribe', methods=['POST'])
 async def transcribe():
     subtitles_buf = ""
+    chunks_heap = []
+
+    async def _process_chunk(sem, time_offset):
+        async with sem:
+            chunk_buf = audio_file[
+                  time_offset * TEN_MINUTES * 1_000: time_offset * TEN_MINUTES * 1_000 + TEN_MINUTES * 1_000]
+            chunk_export = functools.partial(chunk_buf.export, f"app/static/downloads/tmp_{time_offset}.mp3", format="mp3")
+            await asyncio.to_thread(chunk_export)
+
+            app.logger.info(
+                f"Processing tmp_{time_offset}.mp3 start={time_offset * TEN_MINUTES},"
+                f" end={time_offset * TEN_MINUTES + TEN_MINUTES}")
+            rsp = await async_transcript(f"app/static/downloads/tmp_{time_offset}.mp3", dnl_format)
+            # subtitles_buf += response
+            heapq.heappush(chunks_heap, (time_offset, rsp))
+            pathlib.Path(f"app/static/downloads/tmp_{time_offset}.mp3").unlink()
 
     if 'audio_file' not in request.files:
         return jsonify({'error': 'No audio file provided'})
@@ -108,27 +129,36 @@ async def transcribe():
 
         app.logger.info(f"Audio file duration={timedelta(seconds=len_in_sec)} min")
         # Iterate over 10 minutes chunks
-        for time_offset in range(len_in_sec // TEN_MINUTES):
-            buf = audio_file[
-                  time_offset * TEN_MINUTES * 1_000: time_offset * TEN_MINUTES * 1_000 + TEN_MINUTES * 1_000]
-            buf.export(f"app/static/downloads/tmp_{time_offset}.mp3", format="mp3")
+        # MultiObject(range(len_in_sec // TEN_MINUTES)).call(lambda offset: _process_chunk(offset), log_)
+        concurrency_limit = 8
+        semaphore = asyncio.Semaphore(concurrency_limit)
+        tasks = [_process_chunk(semaphore, offset) for offset in range(len_in_sec // TEN_MINUTES)]
+        await asyncio.gather(*tasks)
 
-            app.logger.info(
-                f"Processing tmp_{time_offset}.mp3 start={time_offset * TEN_MINUTES},"
-                f" end={time_offset * TEN_MINUTES + TEN_MINUTES}")
-            # with open(f"app/static/downloads/tmp_{time_offset}.mp3", 'rb') as tmp_file:
-            #     try:
-            #         response = client.audio.transcriptions.create(
-            #             model="whisper-1",
-            #             file=tmp_file,
-            #             language='ru',
-            #             response_format=dnl_format
-            #         )
-            #     except Exception as e:
-            #         return jsonify({'error': f'Error processing audio: {str(e)}'})
-            response = await async_transcript(f"app/static/downloads/tmp_{time_offset}.mp3", dnl_format)
-            subtitles_buf += response
-            pathlib.Path(f"app/static/downloads/tmp_{time_offset}.mp3").unlink()
+        # subtitles_buf = ''.join([chunk[1] for chunk in sorted(chunks_heap, key=lambda x: x[0])])
+        subtitles_buf = ''.join(heapq.heappop(chunks_heap)[1] for _ in range(len(chunks_heap)))
+
+        # for time_offset in range(len_in_sec // TEN_MINUTES):
+        #     buf = audio_file[
+        #           time_offset * TEN_MINUTES * 1_000: time_offset * TEN_MINUTES * 1_000 + TEN_MINUTES * 1_000]
+        #     buf.export(f"app/static/downloads/tmp_{time_offset}.mp3", format="mp3")
+        #
+        #     app.logger.info(
+        #         f"Processing tmp_{time_offset}.mp3 start={time_offset * TEN_MINUTES},"
+        #         f" end={time_offset * TEN_MINUTES + TEN_MINUTES}")
+        #     # with open(f"app/static/downloads/tmp_{time_offset}.mp3", 'rb') as tmp_file:
+        #     #     try:
+        #     #         response = client.audio.transcriptions.create(
+        #     #             model="whisper-1",
+        #     #             file=tmp_file,
+        #     #             language='ru',
+        #     #             response_format=dnl_format
+        #     #         )
+        #     #     except Exception as e:
+        #     #         return jsonify({'error': f'Error processing audio: {str(e)}'})
+        #     response = await async_transcript(f"app/static/downloads/tmp_{time_offset}.mp3", dnl_format)
+        #     subtitles_buf += response
+        #     pathlib.Path(f"app/static/downloads/tmp_{time_offset}.mp3").unlink()
 
     else:
         response = await async_transcript(path_to_tmp_mp3_file, dnl_format)
