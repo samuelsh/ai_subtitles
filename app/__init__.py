@@ -110,9 +110,9 @@ async def transcribe():
     dnl_format = request.form.get('format', 'text')
 
     path_to_tmp_mp3_file = f"app/static/downloads/{media_file.filename}"
-    with open(path_to_tmp_mp3_file, 'w+b') as tmp_file:
+    async with aiofiles.open(path_to_tmp_mp3_file, 'w+b') as tmp_file:
         while buf := media_file.read(1024 * 1024):
-            tmp_file.write(buf)
+            await tmp_file.write(buf)
 
     if media_file.filename.endswith('.mp4'):
         app.logger.info(f"Converting {media_file.filename} to MP3")
