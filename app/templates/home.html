@@ -1,40 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #7983ff;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-    <title>Audio Transcription</title>
-</head>
-<body>
-    <h1>Audio Transcription</h1>
-    <form action="/transcribe" method="post" enctype="multipart/form-data" id="transcribe_form">
-        <label for="audio_file">Select a media file:</label>
-        <input type="file" name="audio_file" accept=".mp3, .wav, .ogg, .mp4" required>
-        <br>
-        <label for="format">Select download format:</label>
-            <select name="format" id="format">
-                <option value="text">Text (.txt)</option>
-                <option value="srt">SubRip Subtitle (.srt)</option>
-            </select>
-        <br>
-        <br>
-        <button type="submit">Transcribe and Download</button>
-    </form>
-<!--    <div id="loadingSpinner" class="spinner" style="display:none;"></div>-->
-<!--    <script src="static/js/spinner.js"></script>-->
-    </body>
-</html>
+<form action="/transcribe" method="post" enctype="multipart/form-data" id="transcribe_form">
+    <label for="audio_file">Select a media file:</label>
+    <input type="file" name="audio_file" accept=".mp3, .wav, .ogg, .mp4" required>
+    <br>
+    <label for="format">Select download format:</label>
+    <select name="format" id="format">
+        <option value="text">Text (.txt)</option>
+        <option value="srt">SubRip Subtitle (.srt)</option>
+    </select>
+    <br>
+    <label for="language">Select language:</label>
+    <select name="language" id="language">
+        <option value="en">English</option>
+        <option value="ru">Russian</option>
+        <option value="he">Hebrew</option>
+    </select>
+    <br>
+    <br>
+    <button type="submit">Transcribe and Download</button>
+</form>
