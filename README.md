@@ -7,7 +7,7 @@ transcribed concurrently, and reassembled in order.
 
 ## Prerequisites
 
-- Python 3.9+ (3.13 supported; see note below)
+- Python 3.11+ (3.13 supported; see note below)
 - `ffmpeg` on your PATH (moviepy/pydub use it for MP4 conversion and chunking)
   - macOS: `brew install ffmpeg`
   - Debian/Ubuntu: `apt-get install ffmpeg`
