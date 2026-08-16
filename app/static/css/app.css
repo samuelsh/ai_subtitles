@@ -1,0 +1,258 @@
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #d8dee9;
+  --text: #1c2330;
+  --text-dim: #5a6676;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-disabled: #9bbbf6;
+  --danger: #b91c1c;
+  --danger-bg: #fee2e2;
+  --danger-border: #fecaca;
+  --success: #047857;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1216;
+    --surface: #171b22;
+    --surface-2: #1f242d;
+    --border: #2b3340;
+    --text: #e6edf5;
+    --text-dim: #9aa7b8;
+    --primary: #3b82f6;
+    --primary-hover: #60a5fa;
+    --primary-disabled: #1e40af;
+    --danger: #f87171;
+    --danger-bg: #3b1414;
+    --danger-border: #5c2020;
+    --success: #34d399;
+    --shadow: 0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
+  }
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  padding-top: 50px;
+}
+
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+}
+
+.page__header { margin-bottom: 28px; text-align: center; }
+
+.page__title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.page__subtitle { margin: 0; color: var(--text-dim); font-size: 15px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.notice {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.notice--warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 16px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+  background: var(--surface-2);
+  outline: none;
+}
+.dropzone:hover, .dropzone:focus-visible { border-color: var(--primary); }
+.dropzone.is-drag { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--surface-2)); }
+.dropzone.is-set { border-style: solid; border-color: var(--success); }
+
+.dropzone__icon { font-size: 26px; color: var(--text-dim); }
+.dropzone__text { font-weight: 500; }
+.dropzone__hint { font-size: 13px; color: var(--text-dim); }
+
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field__label { font-size: 13px; font-weight: 600; color: var(--text-dim); }
+
+.field__control {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.field__control:focus { outline: none; border-color: var(--primary); }
+
+.actions { display: flex; gap: 10px; }
+
+.btn {
+  appearance: none;
+  border: 1px solid transparent;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s, opacity .15s;
+}
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn--primary { background: var(--primary); color: #fff; flex: 1; }
+.btn--primary:not(:disabled):hover { background: var(--primary-hover); }
+.btn--ghost { background: transparent; color: var(--text-dim); border-color: var(--border); }
+.btn--ghost:hover { color: var(--text); }
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.status__spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.progress__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress__label { flex: 1; font-weight: 500; }
+
+.progress__elapsed { font-family: var(--mono); font-size: 13px; color: var(--text-dim); }
+
+.progress__bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+
+.progress__meta { font-size: 13px; color: var(--text-dim); min-height: 1em; }
+
+.progress__log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.progress__log li { padding: 1px 0; }
+.progress__log li.ok { color: var(--success); }
+.progress__log li.err { color: var(--danger); }
+
+.progress--done .status__spinner {
+  animation: none;
+  border-color: var(--success);
+  border-top-color: var(--success);
+}
+
+.progress--error .status__spinner {
+  animation: none;
+  border-color: var(--danger);
+  border-top-color: var(--danger);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status__text { flex: 1; }
+.status__elapsed { font-family: var(--mono); font-size: 13px; color: var(--text-dim); }
+
+.error {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .fields { grid-template-columns: 1fr; }
+}

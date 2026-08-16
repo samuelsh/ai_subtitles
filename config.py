@@ -1,31 +1,16 @@
-# Enable Development Env
+import os
 
 DEBUG = True
 
-# Application Directory
-
-import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Example DB Configuration
-
-SQLALCHEMY_DATABASE_URI = ''
+SQLALCHEMY_DATABASE_URI = ""
 DATABASE_CONNECT_OPTIONS = {}
-
-# Application threads. Common assumption is
-# to use 2 threads per available core.
-# Handles incoming requests using one and 
-# performs background operations on other.
 
 THREADS_PER_PAGE = 2
 
-# CSRF
-
 CSRF_ENABLED = True
-CSRF_SESSION_KEY = 'Use http://grc.com/passwords'
 
-# Key for cookies
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
 
-SECRET_KEY = 'Same as Session Key'
-
-OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
