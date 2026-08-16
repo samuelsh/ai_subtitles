@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # WSGI Server for Development
 # Use this during development vs. apache. Can view via [url]:8001
 # Run using virtualenv. 'env/bin/python run.py'

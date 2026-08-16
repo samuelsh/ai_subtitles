@@ -13,7 +13,7 @@ services:
       - DATABASE_PASSWORD=example
       - DATABASE_NAME=example_db
     volumes:
-      - /var/log/ai_subtitles-web:/log
+      - /var/log/ai_subtitles-web:/app/log
     depends_on:
       - db
 
