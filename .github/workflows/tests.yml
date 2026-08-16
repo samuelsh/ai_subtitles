@@ -37,6 +37,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
+      - name: Show installed packages
+        run: pip list
+
+      - name: Verify imports
+        run: |
+          python -c "import flask, openai, aiohttp, aiofiles, pydub, moviepy.editor, easypy.units, werkzeug.utils; print('imports ok')"
+
       - name: Run tests
         env:
           OPENAI_API_KEY: test-not-real
