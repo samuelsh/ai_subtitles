@@ -34,7 +34,7 @@ RETRY_STATUSES = (429, 500, 502, 503, 504)
 MAX_RETRIES = 5
 RETRY_BASE_DELAY = 1.0
 
-ALLOWED_EXTENSIONS = (".mp3", ".mp4", ".wav", ".ogg")
+ALLOWED_EXTENSIONS = (".mp3", ".mp4", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".webm")
 
 EXT_BY_RESPONSE_FORMAT = {
     "text": "txt",

@@ -2,7 +2,7 @@ name: tests
 
 on:
   push:
-    branches: [master, dev, ci/setup]
+    branches: [master, dev, "feat/**", "ci/**", "fix/**"]
   pull_request:
     branches: [master, dev]
   workflow_dispatch:
