@@ -2,7 +2,7 @@
   "use strict";
 
   var MAX_SIZE = 2 * 1024 * 1024 * 1024;  // 2 GiB, matches server UPLOAD_LIMIT_BYTES
-  var ALLOWED = [".mp3", ".wav", ".ogg", ".mp4"];
+  var ALLOWED = [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".webm", ".mp4"];
 
   var form = document.getElementById("transcribe_form");
   if (!form) return;
@@ -53,7 +53,7 @@
   function validate(file) {
     clearError();
     if (!extOk(file.name)) {
-      error("Unsupported format. Use .mp3, .wav, .ogg, or .mp4.");
+      error("Unsupported format. Use .mp3, .wav, .ogg, .m4a, .aac, .flac, .webm, or .mp4.");
       submitBtn.disabled = true;
       return false;
     }

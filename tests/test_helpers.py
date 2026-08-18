@@ -10,7 +10,7 @@ from app import (
 
 class TestAllowedFile:
     def test_accepts_all_supported_extensions(self):
-        for name in ("a.mp3", "A.MP3", "clip.mp4", "x.wav", "y.ogg"):
+        for name in ("a.mp3", "A.MP3", "clip.mp4", "x.wav", "y.ogg", "z.m4a", "a.aac", "b.flac", "c.webm"):
             assert allowed_file(name)
 
     def test_rejects_empty(self):
